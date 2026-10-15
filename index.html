@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Toren Air — Utilitas DPIB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#12283F;
+    --navy-2:#1B3A5C;
+    --blue-line:#4FA8D8;
+    --blue-line-dim:#2E5F80;
+    --paper:#F5F2E9;
+    --paper-2:#EDE8D9;
+    --ink:#1C2B39;
+    --ink-soft:#4B5C6B;
+    --copper:#B8763E;
+    --copper-dark:#8F5A2C;
+    --teal:#2F8F80;
+    --teal-dark:#1F6459;
+    --danger:#B24B3C;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--navy);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--copper); color:#fff;}
+
+  .sheet{
+    max-width:1180px;
+    margin:0 auto;
+    background:
+      linear-gradient(var(--paper), var(--paper)) padding-box;
+    min-height:100vh;
+  }
+
+  /* ---------- BLUEPRINT HEADER ---------- */
+  header{
+    background:
+      repeating-linear-gradient(0deg, rgba(79,168,216,0.06) 0px, rgba(79,168,216,0.06) 1px, transparent 1px, transparent 32px),
+      repeating-linear-gradient(90deg, rgba(79,168,216,0.06) 0px, rgba(79,168,216,0.06) 1px, transparent 1px, transparent 32px),
+      var(--navy);
+    color:#EAF3FA;
+    padding:38px 40px 26px;
+    border-bottom:3px solid var(--copper);
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-line);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;height:1px;background:var(--blue-line);
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(26px,4vw,38px);
+    line-height:1.08;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  header p.sub{
+    margin:0;
+    max-width:640px;
+    color:#B9CBDA;
+    font-size:14.5px;
+    line-height:1.55;
+  }
+
+  /* title block, like a technical drawing cartouche */
+  .titleblock{
+    margin-top:26px;
+    border:1px solid var(--blue-line-dim);
+    background:rgba(255,255,255,0.03);
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+  }
+  .titleblock .cell{
+    padding:10px 14px;
+    border-right:1px solid var(--blue-line-dim);
+  }
+  .titleblock .cell:last-child{border-right:none;}
+  .titleblock label{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--blue-line);
+    margin-bottom:4px;
+  }
+  .titleblock .val{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:#EAF3FA;
+  }
+
+  /* ---------- MAIN LAYOUT ---------- */
+  main{
+    padding:36px 40px 60px;
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:28px;
+  }
+  @media (max-width:860px){
+    main{grid-template-columns:1fr; padding:26px 18px 44px;}
+    header{padding:28px 20px 22px;}
+    .titleblock{grid-template-columns:repeat(2,1fr);}
+  }
+
+  .panel{
+    background:#fff;
+    border:1px solid #D9D2BE;
+    border-radius:var(--radius);
+    padding:26px 26px 28px;
+  }
+  .panel + .panel{margin-top:22px;}
+
+  .panel-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:20px;
+    padding-bottom:14px;
+    border-bottom:1px solid #E4DFCF;
+  }
+  .panel-head h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:16.5px;
+    font-weight:700;
+    margin:0;
+    color:var(--navy-2);
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .panel-head h2 .num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--copper);
+    border:1px solid var(--copper);
+    padding:1px 6px;
+    border-radius:20px;
+  }
+
+  fieldset{border:none;margin:0;padding:0;}
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:7px;
+  }
+  .field .hint{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:5px;
+    line-height:1.4;
+  }
+  select, input[type=number]{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    padding:10px 12px;
+    border:1px solid #CBC3AA;
+    border-radius:var(--radius);
+    background:#FCFAF3;
+    color:var(--ink);
+  }
+  select:focus, input:focus{
+    outline:2px solid var(--blue-line);
+    outline-offset:1px;
+    border-color:var(--blue-line);
+  }
+  .unit-suffix{
+    display:flex;
+    align-items:stretch;
+  }
+  .unit-suffix input{border-top-right-radius:0;border-bottom-right-radius:0;}
+  .unit-suffix .suf{
+    display:flex;align-items:center;
+    padding:0 12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    background:var(--paper-2);
+    border:1px solid #CBC3AA;
+    border-left:none;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+
+  .radio-row{display:flex; flex-direction:column; gap:10px;}
+  .radio-card{
+    border:1px solid #CBC3AA;
+    border-radius:var(--radius);
+    padding:12px 14px;
+    cursor:pointer;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    transition:border-color .15s, background .15s;
+  }
+  .radio-card:hover{border-color:var(--blue-line);}
+  .radio-card input{margin-top:3px; accent-color:var(--teal);}
+  .radio-card.active{
+    border-color:var(--teal);
+    background:rgba(47,143,128,0.06);
+  }
+  .radio-card .rc-title{font-weight:600; font-size:13.5px; margin-bottom:2px;}
+  .radio-card .rc-desc{font-size:12px; color:var(--ink-soft); line-height:1.4;}
+
+  .slider-row{
+    display:flex; align-items:center; gap:12px;
+  }
+  input[type=range]{
+    flex:1;
+    accent-color:var(--copper);
+  }
+  .slider-val{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    min-width:44px;
+    text-align:right;
+    color:var(--copper-dark);
+    font-weight:700;
+  }
+
+  #dualOnly{display:none;}
+
+  /* ---------- RESULTS ---------- */
+  .result-figure{margin-top:0;}
+  .tank-wrap{
+    display:flex;
+    gap:22px;
+    align-items:flex-end;
+  }
+  .tank-svg-box{flex:0 0 auto;}
+  .result-numbers{flex:1; min-width:0;}
+
+  .stat{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:10px 0;
+    border-bottom:1px dashed #DED7C2;
+  }
+  .stat:last-child{border-bottom:none;}
+  .stat .label{font-size:12.5px; color:var(--ink-soft);}
+  .stat .value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:15px;
+    font-weight:700;
+    color:var(--navy-2);
+  }
+
+  .recommend-box{
+    margin-top:18px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:18px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .recommend-box::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 8px, transparent 8px 16px);
+  }
+  .recommend-box .rb-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--blue-line);
+    position:relative;
+  }
+  .recommend-box .rb-value{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:30px;
+    font-weight:700;
+    margin:4px 0 2px;
+    position:relative;
+  }
+  .recommend-box .rb-sub{
+    font-size:12px;
+    color:#C9D8E4;
+    position:relative;
+  }
+  .recommend-box.second{
+    margin-top:12px;
+    background:var(--teal-dark);
+  }
+  .recommend-box.second .rb-label{color:#BFE7DE;}
+
+  .dual-results{display:none; margin-top:18px;}
+  .dual-results.show{display:block;}
+
+  /* ---------- REFERENCE PANEL ---------- */
+  details.ref{
+    background:#fff;
+    border:1px solid #D9D2BE;
+    border-radius:var(--radius);
+    margin-top:22px;
+  }
+  details.ref summary{
+    list-style:none;
+    cursor:pointer;
+    padding:18px 26px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:15.5px;
+    color:var(--navy-2);
+  }
+  details.ref summary::-webkit-details-marker{display:none;}
+  details.ref summary .chev{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--copper);
+    transition:transform .2s;
+  }
+  details.ref[open] summary .chev{transform:rotate(90deg);}
+  .ref-body{padding:0 26px 26px;}
+  .ref-body h3{
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--copper-dark);
+    margin:22px 0 10px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .ref-body h3:first-child{margin-top:4px;}
+  table.sni{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.8px;
+  }
+  table.sni th{
+    text-align:left;
+    background:var(--paper-2);
+    padding:8px 10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-soft);
+    border-bottom:1px solid #D9D2BE;
+  }
+  table.sni td{
+    padding:8px 10px;
+    border-bottom:1px solid #EEE9DB;
+  }
+  table.sni tr:hover td{background:#FBF9F1;}
+  .ref-body ol, .ref-body ul{
+    font-size:13px;
+    line-height:1.65;
+    padding-left:20px;
+    margin:8px 0;
+  }
+  .ref-body p{font-size:13px; line-height:1.65; margin:8px 0;}
+  .note-box{
+    margin-top:14px;
+    border-left:3px solid var(--copper);
+    background:var(--paper-2);
+    padding:12px 14px;
+    font-size:12.5px;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .source-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+  }
+
+  footer{
+    padding:20px 40px 34px;
+    color:#8FA5B8;
+    font-size:11.5px;
+    text-align:center;
+    background:var(--navy);
+    font-family:'JetBrains Mono',monospace;
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header>
+    <div class="eyebrow">Utilitas Bangunan — DPIB</div>
+    <h1>Kalkulator &amp; Pemilihan Kapasitas Toren Air</h1>
+    <p class="sub">Menghitung kebutuhan air bersih harian berdasarkan jumlah penghuni dan jenis bangunan, lalu menentukan kapasitas toren yang sesuai — mengacu pada SNI 03-7065-2005 tentang Tata Cara Perencanaan Sistem Plambing.</p>
+
+    <div class="titleblock">
+      <div class="cell">
+        <label>Acuan</label>
+        <div class="val">SNI 03-7065-2005</div>
+      </div>
+      <div class="cell">
+        <label>Mata Pelajaran</label>
+        <div class="val">Utilitas Bangunan</div>
+      </div>
+      <div class="cell">
+        <label>Kompetensi Keahlian</label>
+        <div class="val">DPIB</div>
+      </div>
+      <div class="cell">
+        <label>Status</label>
+        <div class="val" id="statusDate">—</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: FORM -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2><span class="num">01</span> Data Bangunan</h2>
+        </div>
+
+        <div class="field">
+          <label for="jenisBangunan">Jenis bangunan / penggunaan gedung</label>
+          <select id="jenisBangunan"></select>
+          <div class="hint" id="konsumsiHint"></div>
+        </div>
+
+        <div class="field">
+          <label for="jumlahPenghuni" id="jumlahLabel">Jumlah penghuni</label>
+          <div class="unit-suffix">
+            <input type="number" id="jumlahPenghuni" min="1" value="5" step="1">
+            <div class="suf" id="jumlahSuf">orang</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Cadangan / faktor keamanan</label>
+          <div class="slider-row">
+            <input type="range" id="cadangan" min="0" max="50" value="20" step="5">
+            <div class="slider-val" id="cadanganVal">20%</div>
+          </div>
+          <div class="hint">Tambahan untuk mengantisipasi kebocoran, pemadaman air PDAM, atau lonjakan pemakaian. Umumnya diambil 15–25%.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2><span class="num">02</span> Konfigurasi Sistem Toren</h2>
+        </div>
+
+        <div class="field">
+          <label>Sistem penyediaan air</label>
+          <div class="radio-row" id="sistemRadio">
+            <label class="radio-card active" data-val="langsung">
+              <input type="radio" name="sistem" value="langsung" checked>
+              <div>
+                <div class="rc-title">Toren langsung (tanpa tandon bawah)</div>
+                <div class="rc-desc">Umum untuk rumah tinggal &amp; bangunan kecil. Air dari sumber dipompa langsung ke satu toren di atas.</div>
+              </div>
+            </label>
+            <label class="radio-card" data-val="dual">
+              <input type="radio" name="sistem" value="dual">
+              <div>
+                <div class="rc-title">Tandon bawah + toren atas (dua tangki)</div>
+                <div class="rc-desc">Untuk gedung bertingkat / penghuni banyak. Tandon bawah menampung kebutuhan 1 hari, toren atas menampung fluktuasi pemakaian jam puncak.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="field" id="dualOnly">
+          <label>Porsi toren atas terhadap kebutuhan harian</label>
+          <div class="slider-row">
+            <input type="range" id="porsiTorenAtas" min="10" max="50" value="20" step="5">
+            <div class="slider-val" id="porsiVal">20%</div>
+          </div>
+          <div class="hint">Sesuai SNI 03-7065-2005 butir 5.5.2, kapasitas tangki air atas diperhitungkan berdasarkan fluktuasi pemakaian air per hari, bukan kebutuhan penuh 1 hari. Nilai 15–25% dari kebutuhan harian umum digunakan sebagai pendekatan praktis.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2><span class="num">03</span> Hasil Perhitungan</h2>
+        </div>
+
+        <div class="stat">
+          <div class="label">Kebutuhan air per hari (tanpa cadangan)</div>
+          <div class="value" id="outKebutuhanDasar">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total kebutuhan air per hari (+ cadangan)</div>
+          <div class="value" id="outKebutuhanTotal">—</div>
+        </div>
+
+        <div class="tank-wrap" style="margin-top:16px;">
+          <div class="tank-svg-box" id="tankSvgBox"></div>
+          <div class="result-numbers">
+            <div id="singleResult">
+              <div class="recommend-box">
+                <div class="rb-label">Kapasitas toren dibutuhkan</div>
+                <div class="rb-value" id="outSingleNeeded">—</div>
+                <div class="rb-sub">dibulatkan ke ukuran pasar terdekat →</div>
+              </div>
+              <div class="recommend-box second">
+                <div class="rb-label">Rekomendasi ukuran toren</div>
+                <div class="rb-value" id="outSingleRec">—</div>
+                <div class="rb-sub" id="outSingleRecNote">—</div>
+              </div>
+            </div>
+
+            <div id="dualResult" class="dual-results">
+              <div class="recommend-box">
+                <div class="rb-label">Tandon bawah (ground tank)</div>
+                <div class="rb-value" id="outGroundRec">—</div>
+                <div class="rb-sub" id="outGroundNote">—</div>
+              </div>
+              <div class="recommend-box second">
+                <div class="rb-label">Toren atas (roof tank)</div>
+                <div class="rb-value" id="outRoofRec">—</div>
+                <div class="rb-sub" id="outRoofNote">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div style="padding:0 40px 40px;">
+    <details class="ref" open>
+      <summary>Lampiran — Aturan &amp; Tabel Acuan Pemilihan Toren <span class="chev">▸</span></summary>
+      <div class="ref-body">
+
+        <h3>A. Dasar Perhitungan (SNI 03-7065-2005, butir 5.1)</h3>
+        <p>Kebutuhan air minum sehari diperkirakan menggunakan nilai pemakaian air per hari per orang yang sesuai dengan jenis penggunaan gedung. Rumus dasar yang digunakan aplikasi ini:</p>
+        <ol>
+          <li><b>Kebutuhan air/hari = Jumlah penghuni × Standar pemakaian air (Tabel 1)</b></li>
+          <li><b>Total kebutuhan (+cadangan) = Kebutuhan air/hari × (1 + % cadangan)</b></li>
+          <li>Kapasitas tandon bawah = Total kebutuhan (menampung kebutuhan minimal 1 hari penuh, sesuai butir 5.5.1)</li>
+          <li>Kapasitas toren atas = Total kebutuhan × porsi fluktuasi pemakaian (sesuai butir 5.5.2)</li>
+        </ol>
+
+        <h3>B. Tabel 1 — Pemakaian Air Dingin Minimum Sesuai Penggunaan Gedung</h3>
+        <table class="sni">
+          <thead>
+            <tr><th>No</th><th>Penggunaan Gedung</th><th>Pemakaian Air</th><th>Satuan</th></tr>
+          </thead>
+          <tbody id="sniTableBody"></tbody>
+        </table>
+        <p class="source-tag">Sumber: SNI 03-7065-2005, Tata Cara Perencanaan Sistem Plambing, Badan Standardisasi Nasional — Tabel 1.</p>
+
+        <h3>C. Ketentuan Umum Tangki (SNI 03-7065-2005, butir 5.3 &amp; 5.5)</h3>
+        <ul>
+          <li>Kapasitas tangki air bawah diperhitungkan berdasarkan kebutuhan air per hari.</li>
+          <li>Kapasitas tangki air atas diperhitungkan berdasarkan fluktuasi pemakaian air per hari, bukan seluruh kebutuhan 1 hari.</li>
+          <li>Tangki air bawah tidak boleh menjadi bagian struktural bangunan; bila di luar bangunan harus kedap air.</li>
+          <li>Jarak tangki air bawah terhadap bak penampung air kotor/air buangan minimal 5 meter.</li>
+          <li>Ruang bebas di sekeliling tangki (atas, samping, bawah) minimal 60 cm untuk pemeriksaan dan perawatan.</li>
+          <li>Tangki air atas ditempatkan pada ketinggian yang cukup untuk memberi tekanan statik minimum ke alat plambing tertinggi.</li>
+        </ul>
+
+        <h3>D. Panduan Praktis Memilih Sistem Toren</h3>
+        <ul>
+          <li><b>Rumah tinggal &amp; bangunan kecil (≤ 1–2 lantai):</b> cukup gunakan satu toren di atas (tanpa tandon bawah), kapasitas = total kebutuhan harian + cadangan.</li>
+          <li><b>Bangunan bertingkat / penghuni banyak (asrama, sekolah, kantor, rumah sakit, hotel):</b> gunakan tandon bawah (menampung 1 hari penuh) + toren atas (menampung fluktuasi jam puncak, ± 15–25% kebutuhan harian) yang dipompa dari tandon bawah.</li>
+          <li>Letak toren atas harus cukup tinggi agar tekanan air sampai ke alat plambing tertinggi tanpa pompa booster tambahan.</li>
+          <li>Pilih ukuran toren komersial terdekat di atas kebutuhan hasil perhitungan — jangan membulatkan ke bawah.</li>
+        </ul>
+
+        <div class="note-box">
+          <b>Catatan guru:</b> ukuran toren komersial pada aplikasi ini adalah daftar kapasitas yang umum dijual di pasaran (250 L – 30.000 L). Untuk proyek nyata, tetap periksa katalog produsen toren setempat karena ukuran tersedia dapat berbeda antar merek.
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <footer>
+    Kalkulator Toren Air · Bahan Ajar Utilitas DPIB · Acuan SNI 03-7065-2005
+  </footer>
+</div>
+
+<script>
+const buildingTypes = [
+  { name:"Rumah tinggal", unit:"orang", unitLabel:"Jumlah penghuni", suf:"orang", rate:120, sat:"Liter/penghuni/hari" },
+  { name:"Rumah susun / apartemen", unit:"orang", unitLabel:"Jumlah penghuni", suf:"orang", rate:100, sat:"Liter/penghuni/hari" },
+  { name:"Asrama", unit:"orang", unitLabel:"Jumlah penghuni", suf:"orang", rate:120, sat:"Liter/penghuni/hari" },
+  { name:"Sekolah Dasar", unit:"siswa", unitLabel:"Jumlah siswa", suf:"siswa", rate:40, sat:"Liter/siswa/hari" },
+  { name:"SLTP", unit:"siswa", unitLabel:"Jumlah siswa", suf:"siswa", rate:50, sat:"Liter/siswa/hari" },
+  { name:"SMU / SMK dan lebih tinggi", unit:"siswa", unitLabel:"Jumlah siswa", suf:"siswa", rate:80, sat:"Liter/siswa/hari" },
+  { name:"Ruko / Rukan", unit:"orang", unitLabel:"Jumlah penghuni & pegawai", suf:"orang", rate:100, sat:"Liter/penghuni & pegawai/hari" },
+  { name:"Kantor / Pabrik", unit:"orang", unitLabel:"Jumlah pegawai", suf:"pegawai", rate:50, sat:"Liter/pegawai/hari" },
+  { name:"Rumah Sakit", unit:"bed", unitLabel:"Jumlah tempat tidur pasien", suf:"tempat tidur", rate:500, sat:"Liter/tempat tidur pasien/hari" },
+  { name:"Hotel berbintang", unit:"bed", unitLabel:"Jumlah tempat tidur", suf:"tempat tidur", rate:250, sat:"Liter/tempat tidur/hari" },
+  { name:"Hotel melati / penginapan", unit:"bed", unitLabel:"Jumlah tempat tidur", suf:"tempat tidur", rate:150, sat:"Liter/tempat tidur/hari" },
+  { name:"Peribadatan (belum termasuk air wudhu)", unit:"orang", unitLabel:"Jumlah jamaah / orang", suf:"orang", rate:5, sat:"Liter/orang" },
+];
+
+// approximate common commercial tank sizes sold in Indonesia (liter)
+const rooftopSizes = [250,300,500,550,600,650,700,1000,1050,1100,1200,2000,2200,3000,4000,5000];
+const groundSizes  = [500,1000,1200,2200,3000,4000,5000,8000,10000,16000,20000,30000];
+
+const elJenis = document.getElementById('jenisBangunan');
+const elJumlah = document.getElementById('jumlahPenghuni');
+const elJumlahLabel = document.getElementById('jumlahLabel');
+const elJumlahSuf = document.getElementById('jumlahSuf');
+const elKonsumsiHint = document.getElementById('konsumsiHint');
+const elCadangan = document.getElementById('cadangan');
+const elCadanganVal = document.getElementById('cadanganVal');
+const elPorsi = document.getElementById('porsiTorenAtas');
+const elPorsiVal = document.getElementById('porsiVal');
+const dualOnly = document.getElementById('dualOnly');
+const sistemRadio = document.getElementById('sistemRadio');
+const singleResult = document.getElementById('singleResult');
+const dualResult = document.getElementById('dualResult');
+
+buildingTypes.forEach((b,i)=>{
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `${b.name} — ${b.rate} ${b.sat}`;
+  elJenis.appendChild(opt);
+});
+
+function fmt(n){
+  return Math.round(n).toLocaleString('id-ID');
+}
+
+function nearestSize(list, needed){
+  for(const s of list){ if(s >= needed) return s; }
+  return list[list.length-1] * Math.ceil(needed / list[list.length-1]);
+}
+
+function currentSistem(){
+  const r = document.querySelector('input[name=sistem]:checked');
+  return r ? r.value : 'langsung';
+}
+
+function renderTank(percentFilled, heightPx=150){
+  const w = 120;
+  const h = heightPx;
+  const fillH = Math.max(6, Math.min(1, percentFilled) * (h-20));
+  const fillY = h - 10 - fillH;
+  return `
+  <svg width="${w}" height="${h+30}" viewBox="0 0 ${w} ${h+30}" xmlns="http://www.w3.org/2000/svg">
+    <text x="${w/2}" y="12" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#4B5C6B">TOREN</text>
+    <rect x="10" y="20" width="${w-20}" height="${h-10}" rx="6" fill="#FCFAF3" stroke="#12283F" stroke-width="2"/>
+    <rect x="13" y="${fillY}" width="${w-26}" height="${fillH}" rx="3" fill="#2F8F80" opacity="0.85"/>
+    <line x1="10" y1="${20+ (h-10)*0.15}" x2="${w-10}" y2="${20+(h-10)*0.15}" stroke="#B8763E" stroke-width="1" stroke-dasharray="2,2"/>
+    <circle cx="${w/2}" cy="14" r="0" fill="none"/>
+  </svg>`;
+}
+
+function update(){
+  const b = buildingTypes[elJenis.value];
+  elJumlahLabel.textContent = b.unitLabel;
+  elJumlahSuf.textContent = b.suf;
+  elKonsumsiHint.textContent = `Standar SNI 03-7065-2005: ${b.rate} ${b.sat}`;
+
+  const jumlah = Math.max(0, parseFloat(elJumlah.value) || 0);
+  const cadangan = parseFloat(elCadangan.value);
+  elCadanganVal.textContent = cadangan + '%';
+  const porsi = parseFloat(elPorsi.value);
+  elPorsiVal.textContent = porsi + '%';
+
+  const kebutuhanDasar = jumlah * b.rate;
+  const kebutuhanTotal = kebutuhanDasar * (1 + cadangan/100);
+
+  document.getElementById('outKebutuhanDasar').textContent = fmt(kebutuhanDasar) + ' L/hari';
+  document.getElementById('outKebutuhanTotal').textContent = fmt(kebutuhanTotal) + ' L/hari';
+
+  const sistem = currentSistem();
+  dualOnly.style.display = sistem === 'dual' ? 'block' : 'none';
+
+  let fillRatio = 0.6;
+
+  if(sistem === 'langsung'){
+    singleResult.style.display = 'block';
+    dualResult.classList.remove('show');
+
+    const rec = nearestSize(rooftopSizes, kebutuhanTotal);
+    document.getElementById('outSingleNeeded').textContent = fmt(kebutuhanTotal) + ' L';
+    document.getElementById('outSingleRec').textContent = fmt(rec) + ' L';
+    document.getElementById('outSingleRecNote').textContent = rec > rooftopSizes[rooftopSizes.length-1]
+      ? 'Melebihi ukuran satu unit umum — pertimbangkan beberapa toren paralel.'
+      : 'Ukuran toren pasaran terdekat di atas kebutuhan.';
+    fillRatio = kebutuhanTotal / rec;
+  } else {
+    singleResult.style.display = 'none';
+    dualResult.classList.add('show');
+
+    const groundNeed = kebutuhanTotal;
+    const roofNeed = kebutuhanTotal * (porsi/100);
+    const groundRec = nearestSize(groundSizes, groundNeed);
+    const roofRec = nearestSize(rooftopSizes, roofNeed);
+
+    document.getElementById('outGroundRec').textContent = fmt(groundRec) + ' L';
+    document.getElementById('outGroundNote').textContent = `Kebutuhan: ${fmt(groundNeed)} L (100% kebutuhan harian)`;
+    document.getElementById('outRoofRec').textContent = fmt(roofRec) + ' L';
+    document.getElementById('outRoofNote').textContent = `Kebutuhan: ${fmt(roofNeed)} L (${porsi}% dari kebutuhan harian)`;
+
+    fillRatio = roofNeed / roofRec;
+  }
+
+  document.getElementById('tankSvgBox').innerHTML = renderTank(fillRatio);
+}
+
+elJenis.addEventListener('change', update);
+elJumlah.addEventListener('input', update);
+elCadangan.addEventListener('input', update);
+elPorsi.addEventListener('input', update);
+
+document.querySelectorAll('.radio-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+    card.querySelector('input').checked = true;
+    update();
+  });
+});
+
+// populate SNI reference table
+const sniBody = document.getElementById('sniTableBody');
+const sniFull = [
+  [1,"Rumah tinggal","120","Liter/penghuni/hari"],
+  [2,"Rumah susun","100","Liter/penghuni/hari"],
+  [3,"Asrama","120","Liter/penghuni/hari"],
+  [4,"Rumah Sakit","500","Liter/tempat tidur pasien/hari"],
+  [5,"Sekolah Dasar","40","Liter/siswa/hari"],
+  [6,"SLTP","50","Liter/siswa/hari"],
+  [7,"SMU/SMK dan lebih tinggi","80","Liter/siswa/hari"],
+  [8,"Ruko/Rukan","100","Liter/penghuni & pegawai/hari"],
+  [9,"Kantor / Pabrik","50","Liter/pegawai/hari"],
+  [10,"Toserba, toko pengecer","5","Liter/m²"],
+  [11,"Restoran","15","Liter/kursi"],
+  [12,"Hotel berbintang","250","Liter/tempat tidur/hari"],
+  [13,"Hotel Melati / Penginapan","150","Liter/tempat tidur/hari"],
+  [14,"Gedung pertunjukan, bioskop","10","Liter/kursi"],
+  [15,"Gedung serba guna","25","Liter/kursi"],
+  [16,"Stasiun, terminal","3","Liter/penumpang tiba & pergi"],
+  [17,"Peribadatan (belum dgn air wudhu)","5","Liter/orang"],
+];
+sniFull.forEach(row=>{
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td>`;
+  sniBody.appendChild(tr);
+});
+
+document.getElementById('statusDate').textContent = new Date().toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+
+update();
+</script>
+</body>
+</html>
